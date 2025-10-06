@@ -34,18 +34,25 @@ export function useChat(opts: Options = {}) {
     setError(null)
     setStreaming(true)
 
-    const optimistic = messages.concat({ role: "user", content: prompt }, { role: "assistant", content: "" })
+    const optimistic = messages.concat(
+      { role: "user", content: prompt },
+      { role: "assistant", content: "" } // <- to jest tylko do UI
+    )
+
+    // outbound do API: BEZ pustego assistant
+    const outbound = optimistic.filter((m, i) => !(i === optimistic.length - 1 && m.role === "assistant"))
+
     setMessages(optimistic)
     setInput("")
 
     try {
       const payload = {
         ...(opts.model ? { model: opts.model } : {}),
-        messages: optimistic.map(({ role, content }) => ({ role, content })),
+        messages: outbound.map(({ role, content }) => ({ role, content })),
         stream: true,
       }
 
-      const res = await fetch(endpoint, {
+      const res = await fetch("/api/llm/chat", {
         method: "POST",
         signal: ctrl.signal,
         headers: { "Content-Type": "application/json" },

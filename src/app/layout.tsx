@@ -1,4 +1,4 @@
-import "styles/tailwind.css"
+import "@/styles/tailwind.css"
 import localFont from "next/font/local"
 
 const montserrat = localFont({
